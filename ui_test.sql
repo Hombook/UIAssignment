@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS users (
+	acct VARCHAR PRIMARY KEY,
+	pwd VARCHAR ( 50 ) NOT NULL,
+	fullname VARCHAR ( 50 ) NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP 
+);
