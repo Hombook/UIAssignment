@@ -67,23 +67,23 @@ func (h handler) GetUserByAccountHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (h handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	type ceateUserRequest struct {
+	type createUserRequest struct {
 		Acct     string `json:"account"`
 		Password string `json:"password"`
 		FullName string `json:"fullName"`
 	}
-	var createUserRequest ceateUserRequest
+	var cuRequest createUserRequest
 
-	err := json.NewDecoder(r.Body).Decode(&createUserRequest)
+	err := json.NewDecoder(r.Body).Decode(&cuRequest)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if result := h.DB.Create(&models.Users{
-		Acct:     createUserRequest.Acct,
-		Password: createUserRequest.Password,
-		FullName: createUserRequest.FullName}); result.Error != nil {
+		Acct:     cuRequest.Acct,
+		Password: cuRequest.Password,
+		FullName: cuRequest.FullName}); result.Error != nil {
 		log.Println(result.Error)
 
 		var duplicateEntryError = &pgconn.PgError{Code: "23505"}
