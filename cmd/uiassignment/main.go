@@ -23,6 +23,7 @@ func main() {
 	// Paths that requires access token
 	accessControledSR := router.PathPrefix("/v1/").Subrouter()
 	accessControledSR.Use(middlewares.AccessTokenCheckMW())
+	accessControledSR.HandleFunc("/users/{account}", handler.GetUserByAccountHandler).Methods(http.MethodGet)
 	accessControledSR.HandleFunc("/users", handler.ListUsersHandler).Methods(http.MethodGet).Queries("fullName", "{fullName}")
 	accessControledSR.HandleFunc("/users", handler.ListUsersHandler).Methods(http.MethodGet)
 
