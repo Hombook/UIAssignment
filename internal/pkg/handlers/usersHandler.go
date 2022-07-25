@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"uiassignment/internal/pkg/models"
+
+	"github.com/gorilla/mux"
 )
 
 type ListUsersResp struct {
@@ -12,9 +14,11 @@ type ListUsersResp struct {
 }
 
 func (h handler) ListUsersHandler(w http.ResponseWriter, r *http.Request) {
-	var users []models.Users
+	vars := mux.Vars(r)
+	fullName := vars["fullName"]
 
-	if result := h.DB.Find(&users); result.Error != nil {
+	var users []models.Users
+	if result := h.DB.Where(&models.Users{FullName: fullName}).Find(&users); result.Error != nil {
 		log.Println(result.Error)
 	}
 
