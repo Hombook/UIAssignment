@@ -19,7 +19,7 @@ func main() {
 
 	// Paths without access control
 	subRouter := router.PathPrefix("/v1/").Subrouter()
-	subRouter.HandleFunc("/users", handler.CreateUserHandler).Methods(http.MethodPut)
+	subRouter.HandleFunc("/users", handler.CreateUserHandler).Methods(http.MethodPost)
 
 	// Paths that requires access token
 	accessControledSR := router.PathPrefix("/v1/").Subrouter()
