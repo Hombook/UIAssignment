@@ -7,12 +7,14 @@ import (
 	"uiassignment/internal/pkg/handlers"
 	"uiassignment/internal/pkg/middlewares"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
 func main() {
 	DB := db.Init()
-	handler := handlers.New(DB)
+	Validator := validator.New()
+	handler := handlers.New(DB, Validator)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/health", handlers.HealthCheckHandler)
@@ -33,6 +35,7 @@ func main() {
 	ownerAccessSR := router.PathPrefix("/v1/").Subrouter()
 	ownerAccessSR.Use(middlewares.OwnerAccessCheckMW())
 	ownerAccessSR.HandleFunc("/users/{account}", handler.DeleteUserByAccountHandler).Methods(http.MethodDelete)
+	ownerAccessSR.HandleFunc("/users/{account}", handler.UpdateUserHandler).Methods(http.MethodPatch)
 
 	err := http.ListenAndServe(":80", router)
 	if err != nil {

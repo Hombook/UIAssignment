@@ -69,15 +69,30 @@ func (h handler) GetUserByAccountHandler(w http.ResponseWriter, r *http.Request)
 
 func (h handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	type createUserRequest struct {
-		Acct     string `json:"account"`
-		Password string `json:"password"`
-		FullName string `json:"fullName"`
+		Acct     string `json:"account" validate:"required,alphanum"`
+		Password string `json:"password" validate:"required,alphanum,min=6,max=40"`
+		FullName string `json:"fullName" validate:"required,min=1,max=50"`
 	}
 	var cuRequest createUserRequest
 
 	err := json.NewDecoder(r.Body).Decode(&cuRequest)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = h.Validator.Struct(cuRequest)
+	if err != nil {
+		var errResponse CommonResponse
+		errResponse.Message = ValidatorErrorMessageBuilder(err)
+
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(errResponse)
+		if err != nil {
+			log.Println(err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
@@ -115,5 +130,61 @@ func (h handler) DeleteUserByAccountHandler(w http.ResponseWriter, r *http.Reque
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h handler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	type updateUserRequest struct {
+		Password string `json:"password" validate:"omitempty,alphanum,min=6,max=40"`
+		FullName string `json:"fullName" validate:"omitempty,min=1,max=50"`
+	}
+	var uuRequest updateUserRequest
+
+	err := json.NewDecoder(r.Body).Decode(&uuRequest)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = h.Validator.Struct(uuRequest)
+	if err != nil {
+		var errResponse CommonResponse
+		errResponse.Message = ValidatorErrorMessageBuilder(err)
+
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(errResponse)
+		if err != nil {
+			log.Println(err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
+	var encryptedPassword string
+	encryptedPassword, err = auth.EncryptPassword(uuRequest.Password)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	vars := mux.Vars(r)
+	account := vars["account"]
+
+	user := models.Users{Acct: account}
+	if result := h.DB.Model(&user).Updates(models.Users{
+		Password: encryptedPassword,
+		FullName: uuRequest.FullName}); result.Error != nil {
+		log.Println(result.Error)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }

@@ -3,6 +3,7 @@ module uiassignment
 go 1.18
 
 require (
+	github.com/go-playground/validator/v10 v10.11.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgconn v1.12.1 // indirect
