@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"uiassignment/internal/pkg/auth"
 	"uiassignment/internal/pkg/models"
 
 	"github.com/gorilla/mux"
@@ -21,7 +22,7 @@ func (h handler) ListUsersHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(result.Error)
 	}
 
-	var userAcctList []string
+	var userAcctList = []string{}
 	for _, user := range users {
 		userAcctList = append(userAcctList, user.Acct)
 	}
@@ -80,9 +81,16 @@ func (h handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	encryptedPassword, err := auth.EncryptPassword(cuRequest.Password)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	if result := h.DB.Create(&models.Users{
 		Acct:     cuRequest.Acct,
-		Password: cuRequest.Password,
+		Password: encryptedPassword,
 		FullName: cuRequest.FullName}); result.Error != nil {
 		log.Println(result.Error)
 

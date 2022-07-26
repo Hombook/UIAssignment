@@ -3,6 +3,7 @@ package auth
 import (
 	_ "embed"
 	"log"
+	"time"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -35,4 +36,21 @@ func IsAccessTokenValid(accessToken string) bool {
 	}
 
 	return true
+}
+
+func CreateAccessTokenForUser(userAccount string) (string, int64, error) {
+	expiresAt := time.Now().Add(24 * time.Hour).Unix()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, Claims{
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expiresAt,
+		},
+		Account: userAccount,
+	})
+
+	tokenString, err := token.SignedString(jwtSecretKey)
+	if err != nil {
+		return "", 0, err
+	}
+
+	return tokenString, expiresAt, nil
 }
