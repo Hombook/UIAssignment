@@ -105,3 +105,15 @@ func (h handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 }
+
+func (h handler) DeleteUserByAccountHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	account := vars["account"]
+
+	if result := h.DB.Delete(&models.Users{Acct: account}); result.Error != nil {
+		log.Println(result.Error)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

@@ -16,7 +16,8 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func IsAccessTokenValid(accessToken string) bool {
+// Validates access token and returns owner account.
+func IsAccessTokenValid(accessToken string) (isTokenValid bool, tokenOwnerAccount string) {
 	claims := &Claims{}
 	// Parse the token
 	token, err := jwt.ParseWithClaims(accessToken, claims, func(token *jwt.Token) (interface{}, error) {
@@ -25,21 +26,22 @@ func IsAccessTokenValid(accessToken string) bool {
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
 			log.Println("Received a token with invalid signature: ", accessToken)
-			return false
+			return false, ""
 		}
 		log.Println("Fail to parse token: ", accessToken)
-		return false
+		return false, ""
 	}
 	if !token.Valid {
 		log.Println("Invalid token: ", accessToken)
-		return false
+		return false, ""
 	}
 
-	return true
+	return true, claims.Account
 }
 
-func CreateAccessTokenForUser(userAccount string) (string, int64, error) {
-	expiresAt := time.Now().Add(24 * time.Hour).Unix()
+// Creates access token for the given user account.
+func CreateAccessTokenForUser(userAccount string) (accessToken string, expiresAt int64, err error) {
+	expiresAt = time.Now().Add(24 * time.Hour).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, Claims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiresAt,
@@ -47,10 +49,10 @@ func CreateAccessTokenForUser(userAccount string) (string, int64, error) {
 		Account: userAccount,
 	})
 
-	tokenString, err := token.SignedString(jwtSecretKey)
+	accessToken, err = token.SignedString(jwtSecretKey)
 	if err != nil {
 		return "", 0, err
 	}
 
-	return tokenString, expiresAt, nil
+	return
 }
