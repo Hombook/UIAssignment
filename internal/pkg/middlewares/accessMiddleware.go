@@ -34,7 +34,7 @@ func OwnerAccessCheckMW() mux.MiddlewareFunc {
 			vars := mux.Vars(r)
 			account := vars["account"]
 			if account != tokenOwner {
-				w.WriteHeader(http.StatusUnauthorized)
+				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 
