@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"time"
 
@@ -10,16 +11,26 @@ import (
 	"gorm.io/gorm"
 )
 
-var dbHost = getEnv("POSTGRES_HOST", "postgresql")
-var dbPort = getEnv("POSTGRES_PORT", "5432")
-var dbUser = getEnv("POSTGRES_USER", "ui_test")
-var dbPassword = getEnv("POSTGRES_PWD", "uiPassword5678")
+var (
+	dbHost     = getEnv("POSTGRES_HOST", "postgresql")
+	dbPort     = getEnv("POSTGRES_PORT", "5432")
+	dbUser     = getEnv("POSTGRES_USER", "ui_test")
+	dbPassword = getEnv("POSTGRES_PWD", "uiPassword5678")
+)
 
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
 	return fallback
+}
+
+type Pagination struct {
+	Limit      int         `json:"limit"`
+	Page       int         `json:"page"`
+	TotalRows  int64       `json:"totalRows"`
+	TotalPages int         `json:"totalPages"`
+	Rows       interface{} `json:"rows"`
 }
 
 func Init() *gorm.DB {
@@ -42,4 +53,32 @@ func Init() *gorm.DB {
 	}
 
 	return db
+}
+
+// Pagination function for GORM Scopes
+func Paginate(queryStruct interface{}, pagination *Pagination, db *gorm.DB) func(db *gorm.DB) *gorm.DB {
+	var totalRows int64
+	db.Model(queryStruct).Count(&totalRows)
+
+	pagination.TotalRows = totalRows
+	totalPages := int(math.Ceil(float64(totalRows) / float64(pagination.Limit)))
+	pagination.TotalPages = totalPages
+
+	return func(db *gorm.DB) *gorm.DB {
+		page := pagination.Page
+		if page == 0 {
+			page = 1
+		}
+
+		limit := pagination.Limit
+		switch {
+		case limit > 100:
+			limit = 100
+		case limit < 5:
+			limit = 5
+		}
+
+		offset := (page - 1) * limit
+		return db.Offset(offset).Limit(limit)
+	}
 }

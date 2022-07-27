@@ -6,35 +6,72 @@ import (
 	"log"
 	"net/http"
 	"uiassignment/internal/pkg/auth"
+	"uiassignment/internal/pkg/db"
 	"uiassignment/internal/pkg/models"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"github.com/jackc/pgconn"
 	"gorm.io/gorm"
 )
 
-func (h handler) ListUsersHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	fullName := vars["fullName"]
+var queryDecoder = schema.NewDecoder()
 
-	var users []models.Users
-	if result := h.DB.Where(&models.Users{FullName: fullName}).Find(&users); result.Error != nil {
+func (h handler) ListUsersHandler(w http.ResponseWriter, r *http.Request) {
+	type listUserQuery struct {
+		FullName string `schema:"fullName" validate:"omitempty,min=1,max=50"`
+		Limit    int    `schema:"limit" validate:"omitempty,gte=5,lte=100"`
+		Page     int    `schema:"page" validate:"omitempty,gt=0"`
+		OrderBy  string `schema:"orderBy" validate:"omitempty,oneof=acct fullname"`
+		Order    string `schema:"order" validate:"omitempty,oneof=asc desc"`
+	}
+	var luQuery listUserQuery
+
+	err := queryDecoder.Decode(&luQuery, r.URL.Query())
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = h.Validator.Struct(luQuery)
+	if err != nil {
+		var errResponse CommonResponse
+		errResponse.Message = ValidatorErrorMessageBuilder(err)
+
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(errResponse)
+		if err != nil {
+			log.Println(err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
+	pagination := db.Pagination{Limit: luQuery.Limit, Page: luQuery.Page}
+
+	var order string
+	if len(luQuery.OrderBy) > 0 {
+		if len(luQuery.Order) > 0 {
+			order = luQuery.OrderBy + " " + luQuery.Order
+		} else {
+			order = luQuery.OrderBy + " asc"
+		}
+	}
+
+	var usersList = []models.UsersList{}
+	users := models.Users{FullName: luQuery.FullName}
+	if result := h.DB.Model(&users).
+		Scopes(db.Paginate(users, &pagination, h.DB)).
+		Order(order).Find(&usersList); result.Error != nil {
 		log.Println(result.Error)
 	}
-
-	var userAcctList = []string{}
-	for _, user := range users {
-		userAcctList = append(userAcctList, user.Acct)
-	}
-
-	type listUsersResp struct {
-		Users []string `json:"users"`
-	}
-	response := &listUsersResp{Users: userAcctList}
+	pagination.Rows = usersList
 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(response)
+	err = json.NewEncoder(w).Encode(pagination)
 	if err != nil {
 		log.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

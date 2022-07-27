@@ -9,3 +9,8 @@ type Users struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
+type UsersList struct {
+	Acct     string `json:"account" gorm:"primaryKey; column:acct"`
+	FullName string `json:"fullName" gorm:"column:fullname"`
+}
