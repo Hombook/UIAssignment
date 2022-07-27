@@ -12,7 +12,10 @@ type handler struct {
 	Validator *validator.Validate
 }
 
+// swagger:handlers CommonResponse
+// @Description A single element JSON for returning a human readable message.
 type CommonResponse struct {
+	// Human readable message
 	Message string `json:"message"`
 }
 

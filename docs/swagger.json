@@ -1,0 +1,450 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "uiassignment REST service",
+        "title": "uiassignment REST API",
+        "contact": {},
+        "version": "v1"
+    },
+    "basePath": "/",
+    "paths": {
+        "/health": {
+            "get": {
+                "description": "Check if server is healthy",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "'alive'",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CommonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/accessToken": {
+            "post": {
+                "description": "Create user access token",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accessToken"
+                ],
+                "parameters": [
+                    {
+                        "description": "User login credentials",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.createAccessTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.createAccessTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user account credentials"
+                    },
+                    "500": {
+                        "description": "Internal error caused by DB connection issue or JSON parsing failure"
+                    }
+                }
+            }
+        },
+        "/v1/users": {
+            "get": {
+                "description": "Get a list of user accounts and names with paging",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Access token",
+                        "name": "X-Accesstoken",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by user's full name",
+                        "name": "fullName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max items per page(min=5, max=100, default=5)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Requested page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Select attribute to sort the list(acct: account, fullname: full name)",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order(asc: ascending, desc: descending )",
+                        "name": "order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/db.Pagination"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameter",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CommonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing valid acces token for accessing this resource"
+                    },
+                    "500": {
+                        "description": "Internal error caused by DB connection issue or JSON parsing failure"
+                    }
+                }
+            },
+            "post": {
+                "description": "Create user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "parameters": [
+                    {
+                        "description": "Data for creating the user",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.createUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User created"
+                    },
+                    "400": {
+                        "description": "Invalid request body or duplicated account",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CommonResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error caused by DB connection issue or JSON parsing failure"
+                    }
+                }
+            }
+        },
+        "/v1/users/{account}": {
+            "get": {
+                "description": "Get user details by the selected account",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Access token",
+                        "name": "X-Accesstoken",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User account",
+                        "name": "account",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Users"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing valid acces token for accessing this resource"
+                    },
+                    "404": {
+                        "description": "Account doesn't exist"
+                    },
+                    "500": {
+                        "description": "Internal error caused by DB connection issue or JSON parsing failure"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete user by the given account",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Access token",
+                        "name": "X-Accesstoken",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User account",
+                        "name": "account",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted the user"
+                    },
+                    "401": {
+                        "description": "Missing valid acces token for accessing this resource"
+                    },
+                    "403": {
+                        "description": "Current token owner has no right to access this resource"
+                    },
+                    "500": {
+                        "description": "Internal error caused by DB connection issue"
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update selected account's user data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Access token",
+                        "name": "X-Accesstoken",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User account",
+                        "name": "account",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Data for updating the user",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.updateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated the user"
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CommonResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing valid acces token for accessing this resource"
+                    },
+                    "403": {
+                        "description": "Current token owner has no right to access this resource"
+                    },
+                    "500": {
+                        "description": "Internal error caused by DB connection issue"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "db.Pagination": {
+            "description": "JSON response body to hold paginated data",
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "description": "Max number of items per page(5 \u003c= limit \u003c= 100)",
+                    "type": "integer"
+                },
+                "page": {
+                    "description": "Requested page",
+                    "type": "integer"
+                },
+                "rows": {
+                    "description": "Content of data\nexample: [{\"account\": \"ac1\", \"fullName\": \"mister man\"}, {\"account\": \"ac2\", \"fullName\": \"miss lady\"}]"
+                },
+                "totalPages": {
+                    "description": "Total number of pages by the given limit",
+                    "type": "integer"
+                },
+                "totalRows": {
+                    "description": "Total number of the matched item",
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.CommonResponse": {
+            "description": "A single element JSON for returning a human readable message.",
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "Human readable message",
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.createAccessTokenRequest": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "description": "User account\nexample: myAccount100\nrequired: true",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "Password of the given account\nexample: my@pass100Word\nrequired: true",
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.createAccessTokenResponse": {
+            "type": "object",
+            "properties": {
+                "AccessToken": {
+                    "description": "Access token",
+                    "type": "string"
+                },
+                "ExpiresAt": {
+                    "description": "Unix timestamp of when the token expires",
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.createUserRequest": {
+            "description": "JSON request body for creating user",
+            "type": "object",
+            "required": [
+                "account",
+                "fullName",
+                "password"
+            ],
+            "properties": {
+                "account": {
+                    "description": "User account, alphanumeric only",
+                    "type": "string"
+                },
+                "fullName": {
+                    "description": "User's full name(Length: min=1, max=50)",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 1
+                },
+                "password": {
+                    "description": "Password, alphanumeric only(Length: min=6, max=40)",
+                    "type": "string",
+                    "maxLength": 40,
+                    "minLength": 6
+                }
+            }
+        },
+        "handlers.updateUserRequest": {
+            "description": "JSON request body for updating user",
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "description": "User's full name(Length: min=1, max=50)",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 1
+                },
+                "password": {
+                    "description": "Password, alphanumeric only(Length: min=6, max=40)",
+                    "type": "string",
+                    "maxLength": 40,
+                    "minLength": 6
+                }
+            }
+        },
+        "models.Users": {
+            "description": "Full user data",
+            "type": "object",
+            "properties": {
+                "account": {
+                    "description": "User account",
+                    "type": "string"
+                },
+                "createdAt": {
+                    "description": "The time when the account was created",
+                    "type": "string"
+                },
+                "fullName": {
+                    "description": "User's full name",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "User's password, hashed",
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "description": "The time when the account was last updated",
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "uiassignment."
+        }
+    ]
+}

@@ -25,12 +25,20 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
+// swagger:db Pagination
+// @Description JSON response body to hold paginated data
 type Pagination struct {
-	Limit      int         `json:"limit"`
-	Page       int         `json:"page"`
-	TotalRows  int64       `json:"totalRows"`
-	TotalPages int         `json:"totalPages"`
-	Rows       interface{} `json:"rows"`
+	// Max number of items per page(5 <= limit <= 100)
+	Limit int `json:"limit"`
+	// Requested page
+	Page int `json:"page"`
+	// Total number of the matched item
+	TotalRows int64 `json:"totalRows"`
+	// Total number of pages by the given limit
+	TotalPages int `json:"totalPages"`
+	// Content of data
+	// example: [{"account": "ac1", "fullName": "mister man"}, {"account": "ac2", "fullName": "miss lady"}]
+	Rows interface{} `json:"rows"`
 }
 
 func Init() *gorm.DB {

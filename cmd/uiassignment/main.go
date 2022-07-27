@@ -11,6 +11,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// @title        uiassignment REST API
+// @version      v1
+// @description  uiassignment REST service
+// @BasePath     /
+// @schemes      http
+// @tag.name     uiassignment.
 func main() {
 	DB := db.Init()
 	Validator := validator.New()
