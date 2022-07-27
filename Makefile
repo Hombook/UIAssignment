@@ -19,14 +19,14 @@ start_db:
 init_db:
 	timeout 90s bash -c "until docker exec $(postgres_container) pg_isready ; do sleep 5 ; done"
 	timeout 90s bash -c "until docker exec $(postgres_container) psql -h 127.0.0.1 -U ui_test -d ui_test ; do sleep 5 ; done"
-	docker cp ./ui_test.sql $(postgres_container):/ui_test.sql
+	docker cp ./db/ui_test.sql $(postgres_container):/ui_test.sql
 	docker exec $(postgres_container) psql -h 127.0.0.1 -U ui_test -d ui_test -f /ui_test.sql
 #build: @ Build UI assignment REST service Docker image
 build:
 	docker build -t uiassignment .
 #start_server: @ Start UI assignment REST service
 start_server:
-	docker run --name $(uiassignment_container) -p 80:80 -d uiassignment -v /logs:/tmp/uiassignment/logs
+	docker run --name $(uiassignment_container) -p 80:80 -d uiassignment
 	docker network connect $(docker_network) $(uiassignment_container)
 #stop_server: @ Stop UI assignment REST service
 stop_server:

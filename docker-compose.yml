@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    restart: always
+    depends_on:
+      - postgresql
+    ports:
+      - "80:80"
+  postgresql:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ui_test
+      POSTGRES_PASSWORD: uiPassword5678
+      POSTGRES_DB: ui_test
+    ports:
+      - "5432:5432"
+    volumes:
+      # Uncomment this line for persisting data to host folder.
+      #- /var/lib/postgresql/data:/var/lib/postgresql/data
+      - ./db/ui_test.sql:/docker-entrypoint-initdb.d/ui_test.sql
