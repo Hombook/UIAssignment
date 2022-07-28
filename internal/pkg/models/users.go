@@ -8,7 +8,7 @@ type Users struct {
 	// User account
 	Acct string `json:"account" gorm:"primaryKey; column:acct"`
 	// User's password, hashed
-	Password string `json:"password" gorm:"column:pwd"`
+	Password string `json:"password,omitempty" gorm:"column:pwd"`
 	// User's full name
 	FullName string `json:"fullName" gorm:"column:fullname"`
 	// The time when the account was created

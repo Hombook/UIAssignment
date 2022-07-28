@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"context"
 	"net/http"
 	"uiassignment/internal/pkg/auth"
 
@@ -11,11 +12,14 @@ func AccessTokenCheckMW() mux.MiddlewareFunc {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			accesstoken := r.Header.Get("X-Accesstoken")
-			isTokenValid, _ := auth.IsAccessTokenValid(accesstoken)
+			isTokenValid, tokenOwner := auth.IsAccessTokenValid(accesstoken)
 			if !isTokenValid {
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
+
+			ctx := context.WithValue(r.Context(), "tokenOwner", tokenOwner)
+			r = r.WithContext(ctx)
 			h.ServeHTTP(w, r)
 		})
 	}
@@ -38,6 +42,8 @@ func OwnerAccessCheckMW() mux.MiddlewareFunc {
 				return
 			}
 
+			ctx := context.WithValue(r.Context(), "tokenOwner", tokenOwner)
+			r = r.WithContext(ctx)
 			h.ServeHTTP(w, r)
 		})
 	}

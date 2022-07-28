@@ -124,6 +124,12 @@ func (h handler) GetUserByAccountHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// Omit password field if the requester is not account owner
+	tokenOwner := r.Context().Value("tokenOwner")
+	if tokenOwner != user.Acct {
+		user.Password = ""
+	}
+
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(w).Encode(user)
