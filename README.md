@@ -77,3 +77,6 @@ The web chat interface for the demo can be found under http://{your.IP}/web/chat
 ## To Startup the API Service in TLS Mode
 When starting up the API service container, mount /tls folder with tls.crt and tls.key files inside it.
 <pre><code>-v /tls:/app/uiassignment/tls</code></pre>
+
+# TODOs
+* Integrate CSRF protection library: https://github.com/gorilla/csrf
