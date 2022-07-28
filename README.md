@@ -33,6 +33,13 @@ To stop the API server only
 To start the API server
 <pre><code>make start_server
 </code></pre>
+Environment variables that can be used for the API server:
+<pre><code>(env variable)=(default value)
+POSTGRES_HOST=postgresql
+POSTGRES_PORT=5432
+POSTGRES_USER=ui_test
+POSTGRES_PWD=iPassword5678
+</code></pre>
 ### The docker-compose way
 To start up the services:
 <pre><code>docker compose up

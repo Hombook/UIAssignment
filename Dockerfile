@@ -1,8 +1,7 @@
 FROM golangci/golangci-lint:v1.47-alpine AS go-builder
 
-RUN apk update
-RUN apk upgrade
-RUN apk add ca-certificates git gcc g++ libc-dev
+RUN apk update && apk upgrade && \
+    apk add ca-certificates git gcc g++ libc-dev
 
 WORKDIR /go/uiassignment
 
@@ -21,9 +20,6 @@ RUN \
 FROM alpine:3.13.2
 
 RUN apk add tzdata
-
-RUN mkdir -p /swagger-docs && \
-    mkdir -p /logs
 
 #copy artifact
 COPY --from=go-builder artifact/ /app/uiassignment
