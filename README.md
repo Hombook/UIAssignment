@@ -6,12 +6,12 @@ The general purpose of this project is to fulfil the tasks from UI's assignment.
 2. Start a non-persistent PostgreSQL container with DB: ui_test
 3. Populate the DB with users table
 4. Start a REST service container with these APIs
-    - GET /v1/users
-    - GET /v1/users/<account>
-    - POST /v1/users
-    - POST /v1/accessToken
-    - DELETE /v1/users/<account>
-    - PATCH /v1/users/<account>
+    - GET /api/v1/users
+    - GET /api/v1/users/<account>
+    - POST /api/v1/users
+    - POST /api/v1/accessToken
+    - DELETE /api/v1/users/<account>
+    - PATCH /api/v1/users/<account>
 
 # How To Use
 ## Prerequisite
@@ -60,3 +60,9 @@ Generate Swagger doc
 <pre><code>swag init -d ./cmd/uiassignment -o ./docs --parseDependency</code></pre>
 * Swagger document can be found under {project root}/docs
 * To view the document, paste the content of swagger.yaml to https://editor.swagger.io/
+
+# WebSocket Demo
+The web chat interface for the demo can be found under http://{your.IP}/web/chat
+* Notification message will be sent when an existing account failed on POST /api/v1/accessToken
+  - Only if it fails on password verification.
+* The demo is a slightly modified version of https://github.com/gorilla/websocket/tree/master/examples/chat

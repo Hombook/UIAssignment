@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"strings"
+	"uiassignment/internal/pkg/websocket"
 
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
@@ -10,6 +11,7 @@ import (
 type handler struct {
 	DB        *gorm.DB
 	Validator *validator.Validate
+	Hub       *websocket.Hub
 }
 
 // swagger:handlers CommonResponse
@@ -19,8 +21,8 @@ type CommonResponse struct {
 	Message string `json:"message"`
 }
 
-func New(db *gorm.DB, validator *validator.Validate) handler {
-	return handler{db, validator}
+func New(db *gorm.DB, validator *validator.Validate, hub *websocket.Hub) handler {
+	return handler{db, validator, hub}
 }
 
 // Helper function for generating message from ValidationErrors.

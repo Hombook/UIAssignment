@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"uiassignment/internal/pkg/auth"
@@ -61,6 +62,8 @@ func (h handler) CreateAccessTokenHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if !auth.IsPasswordMatched(user.Password, catRequest.Password) {
+		notificationMsg := fmt.Sprintf("Login attempt failed for account: %s", catRequest.Acct)
+		h.Hub.BroadcastMessage(notificationMsg)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

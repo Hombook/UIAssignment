@@ -23,5 +23,6 @@ RUN apk add tzdata
 
 #copy artifact
 COPY --from=go-builder artifact/ /app/uiassignment
+COPY ./web/home.html /app/uiassignment/home.html
 
 ENTRYPOINT [ "/app/uiassignment/uiassignment-binary" ]

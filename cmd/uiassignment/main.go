@@ -6,6 +6,8 @@ import (
 	"uiassignment/internal/pkg/db"
 	"uiassignment/internal/pkg/handlers"
 	"uiassignment/internal/pkg/middlewares"
+	"uiassignment/internal/pkg/websocket"
+	"uiassignment/web/pkg/webhandlers"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
@@ -20,24 +22,31 @@ import (
 func main() {
 	DB := db.Init()
 	Validator := validator.New()
-	handler := handlers.New(DB, Validator)
+	hub := websocket.NewHub()
+	go hub.Run()
+	handler := handlers.New(DB, Validator, hub)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/health", handlers.HealthCheckHandler)
+	// Websocket demo
+	router.HandleFunc("/web/chat", webhandlers.ChatWebHandler)
+	router.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		websocket.ServeWs(hub, w, r)
+	})
 
 	// Paths without access control
-	subRouter := router.PathPrefix("/v1/").Subrouter()
+	subRouter := router.PathPrefix("/api/v1/").Subrouter()
 	subRouter.HandleFunc("/accessToken", handler.CreateAccessTokenHandler).Methods(http.MethodPost)
 	subRouter.HandleFunc("/users", handler.CreateUserHandler).Methods(http.MethodPost)
 
 	// Paths that requires access token
-	accessControledSR := router.PathPrefix("/v1/").Subrouter()
+	accessControledSR := router.PathPrefix("/api/v1/").Subrouter()
 	accessControledSR.Use(middlewares.AccessTokenCheckMW())
 	accessControledSR.HandleFunc("/users/{account}", handler.GetUserByAccountHandler).Methods(http.MethodGet)
 	accessControledSR.HandleFunc("/users", handler.ListUsersHandler).Methods(http.MethodGet)
 
 	// Paths that requires resource owner access
-	ownerAccessSR := router.PathPrefix("/v1/").Subrouter()
+	ownerAccessSR := router.PathPrefix("/api/v1/").Subrouter()
 	ownerAccessSR.Use(middlewares.OwnerAccessCheckMW())
 	ownerAccessSR.HandleFunc("/users/{account}", handler.DeleteUserByAccountHandler).Methods(http.MethodDelete)
 	ownerAccessSR.HandleFunc("/users/{account}", handler.UpdateUserHandler).Methods(http.MethodPatch)
