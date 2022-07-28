@@ -2,10 +2,9 @@
 The general purpose of this project is to fulfil the tasks from UI's assignment.
 
 # What It Does
-1. Generate secret key for JWT
-2. Start a non-persistent PostgreSQL container with DB: ui_test
-3. Populate the DB with users table
-4. Start a REST service container with these APIs
+1. Start a non-persistent PostgreSQL container with DB: ui_test
+2. Populate the DB with users table
+3. Start a REST service container with these APIs
     - GET /v1/users
     - GET /v1/users/<account>
     - POST /v1/users
