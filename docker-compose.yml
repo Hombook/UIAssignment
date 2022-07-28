@@ -1,12 +1,14 @@
 version: '3.8'
 services:
-  web:
+  api:
     build: .
     restart: always
     depends_on:
       - postgresql
     ports:
-      - "80:80"
+      - "443:443"
+    volumes:
+      - ./tls:/app/uiassignment/tls
   postgresql:
     image: postgres
     restart: always

@@ -4,7 +4,7 @@ The general purpose of this project is to fulfil the tasks from UI's assignment.
 # What It Does
 1. Start a non-persistent PostgreSQL container with DB: ui_test
 2. Populate the DB with users table
-3. Start a REST service container with these APIs
+3. Start a API service container with these APIs
     - GET /v1/users
     - GET /v1/users/<account>
     - POST /v1/users
@@ -20,6 +20,8 @@ The general purpose of this project is to fulfil the tasks from UI's assignment.
 
 ## Quick Start
 ### The makefile way
+> **_NOTE:_** This will bring up API server in normal HTTP mode at port 80.
+
 To start up the services
 <pre><code>make build
 make run</code></pre>
@@ -40,6 +42,8 @@ POSTGRES_USER=ui_test
 POSTGRES_PWD=iPassword5678
 </code></pre>
 ### The docker-compose way
+> **_NOTE:_** This will bring up the API server in TLS mode at port 443.
+
 To start up the services:
 <pre><code>docker compose up
 </code></pre>
@@ -65,3 +69,11 @@ The web chat interface for the demo can be found under http://{your.IP}/web/chat
 * Notification message will be sent when an existing account failed on POST /api/v1/accessToken
   - Only if it fails on password verification.
 * The demo is a slightly modified version of https://github.com/gorilla/websocket/tree/master/examples/chat
+
+# TLS
+## Generate Self-Signed Certificate
+<pre><code>openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt</code></pre>
+
+## To Startup the API Service in TLS Mode
+When starting up the API service container, mount /tls folder with tls.crt and tls.key files inside it.
+<pre><code>-v /tls:/app/uiassignment/tls</code></pre>
