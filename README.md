@@ -6,11 +6,11 @@ The general purpose of this project is to fulfil the tasks from UI's assignment.
 2. Populate the DB with users table
 3. Start a API service container with these APIs
     - GET /v1/users
-    - GET /v1/users/<account>
+    - GET /v1/users/{account}
     - POST /v1/users
     - POST /v1/accessToken
-    - DELETE /v1/users/<account>
-    - PATCH /v1/users/<account>
+    - DELETE /v1/users/{account}
+    - PATCH /v1/users/{account}
 
 # How To Use
 ## Prerequisite
